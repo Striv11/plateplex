@@ -1,0 +1,7 @@
+{
+  "name": "plateplex",
+  "description": "Cheapest meal plan that hits your nutrition targets, solved in-browser by a from-scratch simplex solver.",
+  "language": "TypeScript",
+  "arc_days": 7,
+  "pages": true
+}
