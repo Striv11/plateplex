@@ -51,7 +51,7 @@ bash check.sh      # format check, lint, typecheck, tests, build
 
 ## Demo
 
-**Status: planned for the UI (Day 3).** Today, `npm run dev` shows a preview that solves a 2000-2200 kcal, 100 g protein, 30 g fiber, sodium-capped day from ten starter foods and prints the cheapest plan. `npm test` runs the solver against brute-force vertex enumeration.
+**Status: planned for the UI (Day 3).** Today, `npm run dev` shows a preview that solves a sodium-capped day from the 68-food dataset (Mifflin-St Jeor "maintain" preset for an 80 kg, 180 cm, 30-year-old) and prints the cheapest plan. `npm test` runs the solver against brute-force vertex enumeration.
 
 ## Design decisions & trade-offs
 
@@ -65,7 +65,7 @@ bash check.sh      # format check, lint, typecheck, tests, build
 See [PLAN.md](PLAN.md) for the day-by-day arc.
 
 - [x] Simplex core, diet model, tests
-- [ ] Food dataset and target presets
+- [x] Food dataset (68 foods) and target presets (cut/maintain/bulk/vegan)
 - [ ] Responsive UI
 - [ ] Explanations from shadow prices
 - [ ] Practical portions, multi-day plans, shopping list
