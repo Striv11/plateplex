@@ -19,3 +19,12 @@ Newest entries at the bottom. Each entry records what actually changed, what was
 - Tests: schema rejection cases, 60+ foods, an Atwater energy sanity check on every food, hand-computed BMR, and every preset feasible for six varied bodies (vegan restricted to vegan foods).
 - Learned: the first energy check failed on broccoli because listed carbs include fiber (~2 kcal/g, not 4). The check now models that instead of loosening the tolerance.
 - Next: Day 3, the responsive UI (targets form, food toggles, plan table, empty/error/infeasible states, a 50 ms solve-time test).
+
+## 2026-11-18 (Day 3)
+
+- Built the responsive UI: targets form (goal, body stats, optional daily budget), food toggles grouped by aisle, plan table with per-food cost, and macro energy bars. Two-column layout on wide screens, single column on phones.
+- Kept logic out of the DOM: `src/model.ts` (`computePlan` maps UI state to ok / over-budget / infeasible / error and never throws) and `src/view.ts` (pure HTML-string renderers with escaping). `src/main.ts` is only event wiring.
+- Budget is checked after solving the min-cost LP: if the minimum exceeds the budget the UI says so and shows the minimum, which is more useful than a bare "infeasible".
+- Tests (node, no DOM needed): 50 ms solve-time assertion, excluded foods never used, vegan restriction, empty/over-budget/infeasible states, HTML escaping, macro split sums to 100%.
+- Learned: testing renderers as string functions avoids adding jsdom while still covering every UI state.
+- Next: Day 4, "why this plan" from shadow prices, minimal-conflict infeasibility explanation (deletion filter), cost-vs-protein Pareto chart.

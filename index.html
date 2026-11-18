@@ -8,20 +8,256 @@
       name="description"
       content="Solve a meal plan that hits your nutrition targets at the lowest cost, in your browser."
     />
+    <style>
+      :root {
+        --bg: #fafaf7;
+        --fg: #1d2420;
+        --muted: #5b655f;
+        --card: #fff;
+        --line: #dcdfd8;
+        --accent: #2f7d4f;
+        --protein: #2f7d4f;
+        --carbs: #c8892b;
+        --fat: #5a7fb8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      header,
+      main {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      h1 {
+        margin: 0;
+      }
+      header p {
+        margin: 0.25rem 0 0;
+        color: var(--muted);
+      }
+      main {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr;
+      }
+      @media (min-width: 52rem) {
+        main {
+          grid-template-columns: 22rem 1fr;
+          align-items: start;
+        }
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1.1rem;
+      }
+      label {
+        display: block;
+      }
+      .field {
+        display: grid;
+        gap: 0.2rem;
+        margin-bottom: 0.6rem;
+      }
+      input,
+      select {
+        font: inherit;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        width: 100%;
+      }
+      input[type="checkbox"] {
+        width: auto;
+      }
+      fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0 0 0.5rem;
+      }
+      legend {
+        font-weight: 600;
+        text-transform: capitalize;
+        color: var(--muted);
+      }
+      .food.blocked {
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.35rem 0.5rem;
+        border-bottom: 1px solid var(--line);
+      }
+      td:nth-child(n + 2),
+      thead th:nth-child(n + 2) {
+        text-align: right;
+      }
+      tbody th {
+        font-weight: 400;
+      }
+      .summary {
+        font-size: 1.05rem;
+      }
+      .notice {
+        padding: 0.75rem;
+        border-radius: 6px;
+        border: 1px solid;
+      }
+      .notice.error {
+        background: #fdecea;
+        border-color: #e0a8a3;
+      }
+      .notice.warn {
+        background: #fff6e0;
+        border-color: #e3c477;
+      }
+      .empty,
+      #timing {
+        color: var(--muted);
+      }
+      .bars {
+        margin-top: 1rem;
+      }
+      .bar-row {
+        display: grid;
+        grid-template-columns: 4.5rem 1fr 3rem;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.3rem;
+      }
+      .bar {
+        background: #eceee8;
+        border-radius: 4px;
+        height: 0.8rem;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+      }
+      .bar-fill.protein {
+        background: var(--protein);
+      }
+      .bar-fill.carbs {
+        background: var(--carbs);
+      }
+      .bar-fill.fat {
+        background: var(--fat);
+      }
+      button {
+        font: inherit;
+        padding: 0.3rem 0.7rem;
+      }
+    </style>
   </head>
   <body>
-    <main id="app">
+    <header>
       <h1>plateplex</h1>
       <p>
         Cheapest daily plan that hits your nutrition targets, solved on your
         device.
       </p>
-      <p>
-        <em
-          >Day 1 preview: solver core only. The full UI lands in later days.</em
-        >
-      </p>
-      <pre id="out" aria-live="polite">Solving…</pre>
+    </header>
+    <main>
+      <div>
+        <section aria-labelledby="t-h">
+          <h2 id="t-h">Targets</h2>
+          <form id="targets" autocomplete="off">
+            <div class="field">
+              <label for="goal">Goal</label>
+              <select id="goal" name="goal"></select>
+            </div>
+            <div class="field">
+              <label for="sex">Sex</label>
+              <select id="sex" name="sex">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="age">Age (years)</label>
+              <input
+                id="age"
+                name="age"
+                type="number"
+                min="15"
+                max="100"
+                value="30"
+              />
+            </div>
+            <div class="field">
+              <label for="weight">Weight (kg)</label>
+              <input
+                id="weight"
+                name="weight"
+                type="number"
+                min="30"
+                max="300"
+                value="80"
+              />
+            </div>
+            <div class="field">
+              <label for="height">Height (cm)</label>
+              <input
+                id="height"
+                name="height"
+                type="number"
+                min="120"
+                max="230"
+                value="180"
+              />
+            </div>
+            <div class="field">
+              <label for="activity">Activity</label>
+              <select id="activity" name="activity"></select>
+            </div>
+            <div class="field">
+              <label for="budget">Daily budget ($, optional)</label>
+              <input
+                id="budget"
+                name="budget"
+                type="number"
+                min="0"
+                step="0.5"
+                placeholder="no limit"
+              />
+            </div>
+          </form>
+        </section>
+      </div>
+      <div>
+        <section aria-labelledby="p-h" aria-live="polite">
+          <h2 id="p-h">Your cheapest plan</h2>
+          <div id="result"></div>
+          <p id="timing"></p>
+        </section>
+        <section aria-labelledby="f-h" style="margin-top: 1rem">
+          <h2 id="f-h">Foods</h2>
+          <p>
+            <button type="button" id="reset-foods">Include all foods</button>
+          </p>
+          <div id="foods"></div>
+        </section>
+      </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
