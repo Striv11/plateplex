@@ -9,7 +9,8 @@ import {
   type Goal,
   type Sex,
 } from "./targets";
-import { foodListHtml, resultHtml } from "./view";
+import { proteinPareto } from "./explain";
+import { foodListHtml, paretoSvg, resultHtml } from "./view";
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -59,6 +60,10 @@ function render(): void {
   const outcome = computePlan(state);
   const ms = performance.now() - t0;
   $("result").innerHTML = resultHtml(outcome);
+  $("pareto").innerHTML =
+    outcome.kind === "ok"
+      ? paretoSvg(proteinPareto(outcome.foods, outcome.targets))
+      : "";
   $("timing").textContent = `Solved in ${ms.toFixed(1)} ms`;
 }
 

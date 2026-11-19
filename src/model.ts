@@ -1,5 +1,11 @@
 import { planDiet, type DietPlan, type Targets } from "./diet";
 import { FOODS, type CatalogFood } from "./dataset";
+import {
+  describeConflict,
+  explainShadow,
+  minimalConflict,
+  type Explanation,
+} from "./explain";
 import { isVeganOnly, presetTargets, type Body, type Goal } from "./targets";
 
 export interface AppState {
@@ -12,7 +18,13 @@ export interface AppState {
 }
 
 export type Outcome =
-  | { kind: "ok"; plan: DietPlan; foods: CatalogFood[]; targets: Targets }
+  | {
+      kind: "ok";
+      plan: DietPlan;
+      foods: CatalogFood[];
+      targets: Targets;
+      why: Explanation[];
+    }
   | { kind: "over-budget"; minCost: number; budget: number }
   | { kind: "infeasible"; reason: string }
   | { kind: "error"; message: string };
@@ -59,13 +71,16 @@ export function computePlan(
   if (foods.length === 0)
     return { kind: "infeasible", reason: "No foods are selected." };
   const plan = planDiet(foods, targets);
-  if (plan.status !== "optimal")
+  if (plan.status !== "optimal") {
+    const conflict = minimalConflict(foods, targets);
     return {
       kind: "infeasible",
       reason:
+        describeConflict(conflict) ||
         "These targets cannot be met with the selected foods. Re-enable some foods or pick a different goal.",
     };
+  }
   if (state.budget !== undefined && plan.cost > state.budget + 1e-9)
     return { kind: "over-budget", minCost: plan.cost, budget: state.budget };
-  return { kind: "ok", plan, foods, targets };
+  return { kind: "ok", plan, foods, targets, why: explainShadow(plan.shadow) };
 }

@@ -1,4 +1,5 @@
 import { AISLES, type CatalogFood } from "./dataset";
+import type { ParetoPoint } from "./explain";
 import type { Outcome } from "./model";
 
 export const escapeHtml = (s: string): string =>
@@ -75,7 +76,8 @@ export function resultHtml(o: Outcome | null): string {
         `${Math.round(t.kcal)} kcal · ${Math.round(t.protein)} g protein · ` +
         `${Math.round(t.fiber)} g fiber · ${Math.round(t.sodium)} mg sodium</p>` +
         `<table><thead><tr><th>Food</th><th>Amount</th><th>Cost</th></tr></thead><tbody>${rows}</tbody></table>` +
-        `<div class="bars">${macroBars(macroSplit(t))}</div>`
+        `<div class="bars">${macroBars(macroSplit(t))}</div>` +
+        whyHtml(o.why.map((e) => e.text))
       );
     }
   }
@@ -103,4 +105,41 @@ export function foodListHtml(
       .join("");
     return `<fieldset><legend>${escapeHtml(aisle)}</legend>${boxes}</fieldset>`;
   }).join("");
+}
+
+/** "Why this plan" list from shadow-price sentences. */
+export function whyHtml(lines: string[]): string {
+  if (lines.length === 0) return "";
+  return (
+    `<h3>Why this plan</h3><ul class="why">` +
+    lines.map((l) => `<li>${escapeHtml(l)}</li>`).join("") +
+    `</ul>`
+  );
+}
+
+/** Inline SVG of minimum cost against protein floor; "" if under 2 points. */
+export function paretoSvg(points: ParetoPoint[]): string {
+  if (points.length < 2) return "";
+  const W = 320,
+    H = 140,
+    pad = 28;
+  const xs = points.map((p) => p.protein);
+  const ys = points.map((p) => p.cost);
+  const [x0, x1] = [Math.min(...xs), Math.max(...xs)];
+  const [y0, y1] = [Math.min(...ys), Math.max(...ys)];
+  const sx = (x: number) => pad + ((x - x0) / (x1 - x0 || 1)) * (W - 2 * pad);
+  const sy = (y: number) =>
+    H - pad - ((y - y0) / (y1 - y0 || 1)) * (H - 2 * pad);
+  const path = points
+    .map((p) => `${sx(p.protein).toFixed(1)},${sy(p.cost).toFixed(1)}`)
+    .join(" ");
+  return (
+    `<h3>Cost vs protein</h3>` +
+    `<svg class="pareto" viewBox="0 0 ${W} ${H}" role="img" aria-label="Minimum daily cost rises from ${money(y0)} at ${x0} g protein to ${money(y1)} at ${x1} g">` +
+    `<polyline fill="none" stroke="currentColor" stroke-width="2" points="${path}"/>` +
+    `<text x="${pad}" y="${H - 8}" font-size="10">${x0} g</text>` +
+    `<text x="${W - pad}" y="${H - 8}" font-size="10" text-anchor="end">${x1} g protein</text>` +
+    `<text x="2" y="${pad}" font-size="10">${money(y1)}</text>` +
+    `<text x="2" y="${H - pad}" font-size="10">${money(y0)}</text></svg>`
+  );
 }

@@ -51,7 +51,7 @@ bash check.sh      # format check, lint, typecheck, tests, build
 
 ## Demo
 
-`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
+`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. A "Why this plan" panel turns shadow prices into sentences ("+10 g of protein costs $0.18 more per day"), a cost-vs-protein curve shows the price of a higher protein floor, and infeasible targets name the minimal conflicting bounds. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
 
 ## Design decisions & trade-offs
 
@@ -67,7 +67,7 @@ See [PLAN.md](PLAN.md) for the day-by-day arc.
 - [x] Simplex core, diet model, tests
 - [x] Food dataset (68 foods) and target presets (cut/maintain/bulk/vegan)
 - [x] Responsive UI
-- [ ] Explanations from shadow prices
+- [x] Explanations from shadow prices, infeasibility diagnosis, cost-vs-protein curve
 - [ ] Practical portions, multi-day plans, shopping list
 - [ ] PWA, e2e tests, benchmarks
 - [ ] Screenshots and release

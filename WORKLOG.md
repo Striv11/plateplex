@@ -28,3 +28,11 @@ Newest entries at the bottom. Each entry records what actually changed, what was
 - Tests (node, no DOM needed): 50 ms solve-time assertion, excluded foods never used, vegan restriction, empty/over-budget/infeasible states, HTML escaping, macro split sums to 100%.
 - Learned: testing renderers as string functions avoids adding jsdom while still covering every UI state.
 - Next: Day 4, "why this plan" from shadow prices, minimal-conflict infeasibility explanation (deletion filter), cost-vs-protein Pareto chart.
+
+## 2026-11-19 (Day 4)
+
+- Added `src/explain.ts`: shadow prices to sentences (one human-sized step per nutrient, sub-cent effects dropped, sorted by impact), a deletion-filter `minimalConflict` that names an irreducible set of infeasible target bounds, and `proteinPareto`, the minimum cost as the protein floor rises until infeasible.
+- UI: "Why this plan" list, an inline SVG cost-vs-protein chart, and infeasible messages that name the conflicting targets. The Pareto sweep runs outside the timed solve so the 50 ms budget still measures one plan.
+- Tests: explanation matches a finite-difference protein change; deletion filter returns exactly {kcal max, protein min} for a 400 g protein / 1500 kcal conflict and every proper subset is feasible; Pareto cost is non-decreasing and stops at infeasibility.
+- Learned: my first conflict test was feasible (3000 kcal with low sodium is fine on this dataset); a hand-checkable conflict (protein kcal > kcal ceiling) makes a better test.
+- Next: Day 5, practical portions via branch-and-bound, multi-day variety, shopping list by aisle.
