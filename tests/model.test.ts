@@ -123,3 +123,33 @@ describe("view", () => {
     expect(all).not.toContain("disabled");
   });
 });
+
+describe("practical and multi-day state", () => {
+  it("returns a menu and shopping list for a week with variety", () => {
+    const o = computePlan({
+      ...defaultState(),
+      days: 3,
+      maxRepeat: 2,
+      practical: true,
+    });
+    expect(o.kind).toBe("ok");
+    if (o.kind !== "ok" || !o.menu) throw new Error("expected menu");
+    expect(o.menu.schedule.status).toBe("ok");
+    expect(o.menu.shopping.length).toBeGreaterThan(0);
+    const html = resultHtml(o);
+    expect(html).toContain("Day 3");
+    expect(html).toContain("Shopping list");
+  });
+
+  it("rejects bad day counts without throwing", () => {
+    expect(computePlan({ ...defaultState(), days: 0 }).kind).toBe("error");
+    expect(computePlan({ ...defaultState(), days: 2, maxRepeat: 0 }).kind).toBe(
+      "error",
+    );
+  });
+
+  it("leaves the plain single-day path without a menu", () => {
+    const o = computePlan(defaultState());
+    expect(o.kind === "ok" && o.menu).toBeFalsy();
+  });
+});

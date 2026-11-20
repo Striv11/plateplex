@@ -1,6 +1,7 @@
 import { AISLES, type CatalogFood } from "./dataset";
 import type { ParetoPoint } from "./explain";
-import type { Outcome } from "./model";
+import type { Menu, Outcome } from "./model";
+import { describeAmount } from "./portions";
 
 export const escapeHtml = (s: string): string =>
   s.replace(
@@ -60,6 +61,12 @@ export function resultHtml(o: Outcome | null): string {
         `Raise the budget, or re-enable foods you have switched off.</p>`
       );
     case "ok": {
+      if (o.menu)
+        return menuHtml(
+          o.menu,
+          o.foods,
+          o.why.map((e) => e.text),
+        );
       const rows = o.foods
         .filter((f) => o.plan.grams[f.id])
         .map((f) => ({ f, g: o.plan.grams[f.id] ?? 0 }))
@@ -141,5 +148,57 @@ export function paretoSvg(points: ParetoPoint[]): string {
     `<text x="${W - pad}" y="${H - 8}" font-size="10" text-anchor="end">${x1} g protein</text>` +
     `<text x="2" y="${pad}" font-size="10">${money(y1)}</text>` +
     `<text x="2" y="${H - pad}" font-size="10">${money(y0)}</text></svg>`
+  );
+}
+
+/** Whole-unit and/or multi-day result: per-day menus, then the shopping list. */
+export function menuHtml(
+  menu: Menu,
+  foods: CatalogFood[],
+  why: string[],
+): string {
+  const s = menu.schedule;
+  const name = (id: string) => foods.find((f) => f.id === id)?.name ?? id;
+  const days = s.days
+    .map((d, i) => {
+      const items = Object.entries(d.grams)
+        .sort((a, b) => b[1] - a[1])
+        .map(
+          ([id, g]) =>
+            `<li>${escapeHtml(name(id))}: ${escapeHtml(describeAmount(id, g))}</li>`,
+        )
+        .join("");
+      return (
+        `<details${s.days.length === 1 ? " open" : ""}><summary>Day ${i + 1} · ${money(d.cost)} · ` +
+        `${Math.round(d.totals.kcal)} kcal · ${Math.round(d.totals.protein)} g protein</summary>` +
+        `<ul class="day">${items}</ul></details>`
+      );
+    })
+    .join("");
+  if (s.status === "infeasible")
+    return (
+      `<p class="notice warn" role="alert">Day ${s.failedDay} cannot meet your targets with these variety limits. ` +
+      `Allow more days per food or re-enable foods.</p>` +
+      days
+    );
+  const shop = menu.shopping
+    .map(
+      (g) =>
+        `<h4>${escapeHtml(g.aisle)}</h4><ul class="shop">` +
+        g.items
+          .map((i) => `<li>${escapeHtml(i.name)}: ${escapeHtml(i.amount)}</li>`)
+          .join("") +
+        `</ul>`,
+    )
+    .join("");
+  return (
+    `<p class="summary"><strong>${money(s.totalCost)}</strong> for ${s.days.length} day${s.days.length === 1 ? "" : "s"} · ` +
+    `${money(s.totalCost / s.days.length)} per day</p>` +
+    days +
+    `<h3>Shopping list</h3>` +
+    `<p class="actions"><button type="button" id="copy-list">Copy list</button> ` +
+    `<button type="button" id="download-csv">Download CSV</button></p>` +
+    shop +
+    whyHtml(why)
   );
 }

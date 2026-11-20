@@ -6,6 +6,12 @@ import {
   minimalConflict,
   type Explanation,
 } from "./explain";
+import {
+  planDays,
+  shoppingList,
+  type Schedule,
+  type ShoppingGroup,
+} from "./schedule";
 import { isVeganOnly, presetTargets, type Body, type Goal } from "./targets";
 
 export interface AppState {
@@ -15,6 +21,18 @@ export interface AppState {
   budget?: number;
   /** Ids of foods the user switched off. */
   excluded: ReadonlySet<string>;
+  /** Round to whole units (eggs, slices, 25 g steps). */
+  practical?: boolean;
+  /** Number of days to plan (default 1). */
+  days?: number;
+  /** A food may be eaten on at most this many days (default: no limit). */
+  maxRepeat?: number;
+}
+
+/** Multi-day / whole-unit result with its shopping list. */
+export interface Menu {
+  schedule: Schedule;
+  shopping: ShoppingGroup[];
 }
 
 export type Outcome =
@@ -24,6 +42,8 @@ export type Outcome =
       foods: CatalogFood[];
       targets: Targets;
       why: Explanation[];
+      /** Present when the state asks for whole units or several days. */
+      menu?: Menu;
     }
   | { kind: "over-budget"; minCost: number; budget: number }
   | { kind: "infeasible"; reason: string }
@@ -82,5 +102,33 @@ export function computePlan(
   }
   if (state.budget !== undefined && plan.cost > state.budget + 1e-9)
     return { kind: "over-budget", minCost: plan.cost, budget: state.budget };
-  return { kind: "ok", plan, foods, targets, why: explainShadow(plan.shadow) };
+  const days = state.days ?? 1;
+  if (!Number.isInteger(days) || days < 1 || days > 14)
+    return {
+      kind: "error",
+      message: "days must be a whole number from 1 to 14",
+    };
+  const maxRepeat = state.maxRepeat ?? days;
+  if (!Number.isInteger(maxRepeat) || maxRepeat < 1)
+    return { kind: "error", message: "max days per food must be at least 1" };
+  const why = explainShadow(plan.shadow);
+  if (!state.practical && days === 1)
+    return { kind: "ok", plan, foods, targets, why };
+  const schedule = planDays(foods, targets, {
+    days,
+    maxDaysPerFood: maxRepeat,
+    practical: !!state.practical,
+  });
+  return {
+    kind: "ok",
+    plan,
+    foods,
+    targets,
+    why,
+    menu: {
+      schedule,
+      shopping:
+        schedule.status === "ok" ? shoppingList(schedule.days, foods) : [],
+    },
+  };
 }

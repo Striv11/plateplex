@@ -36,3 +36,12 @@ Newest entries at the bottom. Each entry records what actually changed, what was
 - Tests: explanation matches a finite-difference protein change; deletion filter returns exactly {kcal max, protein min} for a 400 g protein / 1500 kcal conflict and every proper subset is feasible; Pareto cost is non-decreasing and stops at infeasibility.
 - Learned: my first conflict test was feasible (3000 kcal with low sodium is fine on this dataset); a hand-checkable conflict (protein kcal > kcal ceiling) makes a better test.
 - Next: Day 5, practical portions via branch-and-bound, multi-day variety, shopping list by aisle.
+
+## 2026-11-20 (Day 5)
+
+- Added `src/portions.ts`: foods have natural units (egg 50 g, slice 30 g, 5 g spoonfuls for oils and sugar, 25 g steps otherwise). `planPortions` runs depth-first branch-and-bound on whole unit counts, branching on the most fractional variable, with a per-stage node limit (300). It first tries to meet targets exactly, then falls back to 2% slack and reports the actual `maxDeviation`.
+- Added `src/schedule.ts`: `planDays` (greedy variety: each day is the cheapest plan over foods with days left under the max-days-per-food limit), `shoppingList` grouped by aisle with human amounts ("3 eggs (150 g)"), plain-text and CSV export.
+- UI: days, max days per food and a practical-portions checkbox; per-day menus, shopping list, Copy and Download CSV buttons. Single-day continuous plans are unchanged.
+- Tests: all 12 goal/body combinations give whole units within 2% and bounded cost versus the LP; hand-checkable integer optimum (3 eggs); node limit respected; variety limit never exceeded; variety costs at least the repeated-cheapest-day; shopping totals, aisles and CSV.
+- Learned: the 300-node limit is hit on every realistic plan, so B&B acts as a good anytime heuristic rather than a proof of optimality (about 100-300 ms, so it is outside the 50 ms single-plan budget). A real MILP bound would need better incumbents or cuts.
+- Next: Day 6, design system and dark theme, keyboard shortcuts, localStorage persistence, PWA, Playwright e2e, solver benchmark in CI.

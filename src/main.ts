@@ -1,5 +1,10 @@
 import { FOODS } from "./dataset";
-import { computePlan, defaultState, type AppState } from "./model";
+import {
+  computePlan,
+  defaultState,
+  type AppState,
+  type Outcome,
+} from "./model";
 import {
   ACTIVITY_FACTOR,
   GOALS,
@@ -10,6 +15,7 @@ import {
   type Sex,
 } from "./targets";
 import { proteinPareto } from "./explain";
+import { shoppingCsv, shoppingText } from "./schedule";
 import { foodListHtml, paretoSvg, resultHtml } from "./view";
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -19,6 +25,7 @@ const $ = <T extends HTMLElement>(id: string): T => {
 };
 
 let state: AppState = defaultState();
+let lastOutcome: Outcome | null = null;
 const excluded = new Set<string>();
 
 const form = $<HTMLFormElement>("targets");
@@ -50,6 +57,10 @@ function readState(): AppState {
     goal: val("goal") as Goal,
     budget: budgetRaw === "" ? undefined : Number(budgetRaw),
     excluded,
+    practical: (form.elements.namedItem("practical") as HTMLInputElement)
+      .checked,
+    days: num("days"),
+    maxRepeat: val("maxrepeat").trim() === "" ? undefined : num("maxrepeat"),
   };
 }
 
@@ -59,6 +70,7 @@ function render(): void {
   const t0 = performance.now();
   const outcome = computePlan(state);
   const ms = performance.now() - t0;
+  lastOutcome = outcome;
   $("result").innerHTML = resultHtml(outcome);
   $("pareto").innerHTML =
     outcome.kind === "ok"
@@ -80,5 +92,22 @@ $("foods").addEventListener("change", (e) => {
 $("reset-foods").addEventListener("click", () => {
   excluded.clear();
   render();
+});
+$("result").addEventListener("click", (e) => {
+  const id = (e.target as HTMLElement).id;
+  const menu = lastOutcome?.kind === "ok" ? lastOutcome.menu : undefined;
+  if (!menu) return;
+  if (id === "copy-list")
+    void navigator.clipboard?.writeText(shoppingText(menu.shopping));
+  if (id === "download-csv") {
+    const url = URL.createObjectURL(
+      new Blob([shoppingCsv(menu.shopping)], { type: "text/csv" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "shopping-list.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 });
 render();

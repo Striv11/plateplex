@@ -51,12 +51,14 @@ bash check.sh      # format check, lint, typecheck, tests, build
 
 ## Demo
 
-`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. A "Why this plan" panel turns shadow prices into sentences ("+10 g of protein costs $0.18 more per day"), a cost-vs-protein curve shows the price of a higher protein floor, and infeasible targets name the minimal conflicting bounds. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
+`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. A "Why this plan" panel turns shadow prices into sentences ("+10 g of protein costs $0.18 more per day"), a cost-vs-protein curve shows the price of a higher protein floor, and infeasible targets name the minimal conflicting bounds. "Practical portions" rounds to whole eggs, slices and 25 g steps with branch-and-bound; planning several days with a max-days-per-food limit produces per-day menus and an aisle-grouped shopping list you can copy or download as CSV. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
 
 ## Design decisions & trade-offs
 
 - **Dense tableau, not revised simplex.** A few hundred foods fit comfortably; clarity and testability win for v1.
 - **Bounds as rows.** Simpler than bounded-variable simplex, slightly bigger tableau.
+- **Branch-and-bound for portions.** Depth-first over unit counts with a node limit; tries exact targets first, then allows 2% slack, and reports the deviation it used. Plans cost a few percent more than the continuous optimum.
+- **Greedy variety.** "At most N days per food" is planned day by day over foods with days left, a heuristic rather than a MILP; a late day can fail where a global assignment would not, and the UI names that day.
 - **Bland's rule fallback** after 50 degenerate pivots: Dantzig speed normally, guaranteed termination.
 - **Food data is approximate** and prices illustrative. This is not medical advice.
 
@@ -68,7 +70,7 @@ See [PLAN.md](PLAN.md) for the day-by-day arc.
 - [x] Food dataset (68 foods) and target presets (cut/maintain/bulk/vegan)
 - [x] Responsive UI
 - [x] Explanations from shadow prices, infeasibility diagnosis, cost-vs-protein curve
-- [ ] Practical portions, multi-day plans, shopping list
+- [x] Practical portions, multi-day plans, shopping list
 - [ ] PWA, e2e tests, benchmarks
 - [ ] Screenshots and release
 
