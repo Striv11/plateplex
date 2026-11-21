@@ -20,6 +20,58 @@
         --carbs: #c8892b;
         --fat: #5a7fb8;
       }
+      :root[data-theme="dark"] {
+        --bg: #14181a;
+        --fg: #e6ebe7;
+        --muted: #a2aea6;
+        --card: #1d2326;
+        --line: #333c3f;
+        --accent: #5fc088;
+        --protein: #5fc088;
+        --carbs: #e0a649;
+        --fat: #7fa3de;
+        color-scheme: dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root[data-theme="auto"] {
+          --bg: #14181a;
+          --fg: #e6ebe7;
+          --muted: #a2aea6;
+          --card: #1d2326;
+          --line: #333c3f;
+          --accent: #5fc088;
+          --protein: #5fc088;
+          --carbs: #e0a649;
+          --fat: #7fa3de;
+          color-scheme: dark;
+        }
+      }
+      .toolbar {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      dialog {
+        background: var(--card);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        max-width: 28rem;
+      }
+      dialog kbd {
+        border: 1px solid var(--line);
+        border-radius: 0.25rem;
+        padding: 0 0.4rem;
+        font-family: ui-monospace, monospace;
+      }
+      dialog dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.4rem 1rem;
+      }
+      dialog dd {
+        margin: 0;
+      }
       * {
         box-sizing: border-box;
       }
@@ -184,7 +236,20 @@
         Cheapest daily plan that hits your nutrition targets, solved on your
         device.
       </p>
+      <div class="toolbar">
+        <button type="button" id="theme-btn" aria-label="Change theme">
+          Theme: auto
+        </button>
+        <button type="button" id="help-btn" aria-haspopup="dialog">
+          Shortcuts (?)
+        </button>
+      </div>
     </header>
+    <dialog id="help" aria-labelledby="help-h">
+      <h2 id="help-h">Keyboard shortcuts</h2>
+      <dl id="help-list"></dl>
+      <form method="dialog"><button>Close</button></form>
+    </dialog>
     <main>
       <div>
         <section aria-labelledby="t-h">

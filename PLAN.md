@@ -12,6 +12,12 @@ Seven-day arc. Every milestone has acceptance criteria that can be checked by a 
 | 6   | Design system, PWA, e2e      | Light/dark theme, type scale, keyboard shortcuts (`?` overlay), persisted state in localStorage, installable offline PWA, Playwright e2e covering the core flows; solver benchmark with a budget enforced in CI.                                                 | [ ]    |
 | 7   | Polish, screenshots, release | README screenshots and live link, landing section, accessibility pass (axe in e2e), custom food editor, v0.1.0 changelog; Pages deployment verified.                                                                                                             | [ ]    |
 
+### Day 6 progress
+
+- [x] Light/dark theme, `?` shortcuts overlay, localStorage persistence, benchmark budget (tests/bench.test.ts, run by check.sh)
+- [ ] Installable offline PWA (manifest + service worker)
+- [ ] Playwright e2e for the core flows
+
 ## Stretch
 
 - Micronutrient targets and a "variety" objective (minimize deviation from preferred foods).

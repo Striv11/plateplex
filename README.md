@@ -51,7 +51,7 @@ bash check.sh      # format check, lint, typecheck, tests, build
 
 ## Demo
 
-`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. A "Why this plan" panel turns shadow prices into sentences ("+10 g of protein costs $0.18 more per day"), a cost-vs-protein curve shows the price of a higher protein floor, and infeasible targets name the minimal conflicting bounds. "Practical portions" rounds to whole eggs, slices and 25 g steps with branch-and-bound; planning several days with a max-days-per-food limit produces per-day menus and an aisle-grouped shopping list you can copy or download as CSV. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
+`npm run dev` opens the UI: pick a goal and body stats, optionally set a daily budget, toggle foods on or off, and the cheapest plan (table, cost, macro bars) recomputes on every change in a few milliseconds. A "Why this plan" panel turns shadow prices into sentences ("+10 g of protein costs $0.18 more per day"), a cost-vs-protein curve shows the price of a higher protein floor, and infeasible targets name the minimal conflicting bounds. "Practical portions" rounds to whole eggs, slices and 25 g steps with branch-and-bound; planning several days with a max-days-per-food limit produces per-day menus and an aisle-grouped shopping list you can copy or download as CSV. Settings and excluded foods persist in localStorage; `t` cycles the theme and `?` lists shortcuts. Empty, invalid-input, infeasible and over-budget states each get their own message. `npm test` also runs the solver against brute-force vertex enumeration.
 
 ## Design decisions & trade-offs
 
@@ -71,7 +71,8 @@ See [PLAN.md](PLAN.md) for the day-by-day arc.
 - [x] Responsive UI
 - [x] Explanations from shadow prices, infeasibility diagnosis, cost-vs-protein curve
 - [x] Practical portions, multi-day plans, shopping list
-- [ ] PWA, e2e tests, benchmarks
+- [x] Dark theme, shortcuts (`?`), saved state, benchmark budget in CI
+- [ ] PWA, e2e tests
 - [ ] Screenshots and release
 
 ## License

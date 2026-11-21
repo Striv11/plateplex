@@ -16,6 +16,16 @@ import {
 } from "./targets";
 import { proteinPareto } from "./explain";
 import { shoppingCsv, shoppingText } from "./schedule";
+import {
+  nextTheme,
+  parseSaved,
+  serializeSaved,
+  shortcutAction,
+  SHORTCUTS,
+  STORAGE_KEY,
+  type Saved,
+  type Theme,
+} from "./persist";
 import { foodListHtml, paretoSvg, resultHtml } from "./view";
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -43,6 +53,63 @@ $("activity").innerHTML = (Object.keys(ACTIVITY_FACTOR) as Activity[])
       `<option value="${a}"${a === "moderate" ? " selected" : ""}>${a}</option>`,
   )
   .join("");
+
+let theme: Theme = "auto";
+
+function applyTheme(): void {
+  document.documentElement.dataset.theme = theme;
+  $("theme-btn").textContent = `Theme: ${theme}`;
+}
+
+function setField(name: string, value: string | number): void {
+  (form.elements.namedItem(name) as HTMLInputElement).value = String(value);
+}
+
+function restore(): void {
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    /* storage blocked: run without persistence */
+  }
+  const s = parseSaved(raw);
+  if (s.goal) setField("goal", s.goal);
+  if (s.sex) setField("sex", s.sex);
+  if (s.age !== undefined) setField("age", s.age);
+  if (s.weight !== undefined) setField("weight", s.weight);
+  if (s.height !== undefined) setField("height", s.height);
+  if (s.activity) setField("activity", s.activity);
+  if (s.budget !== undefined) setField("budget", s.budget);
+  if (s.days !== undefined) setField("days", s.days);
+  if (s.maxrepeat !== undefined) setField("maxrepeat", s.maxrepeat);
+  if (s.practical !== undefined)
+    (form.elements.namedItem("practical") as HTMLInputElement).checked =
+      s.practical;
+  for (const id of s.excluded ?? []) excluded.add(id);
+  theme = s.theme ?? "auto";
+}
+
+function save(): void {
+  const saved: Saved = {
+    goal: state.goal,
+    sex: state.body.sex,
+    age: state.body.age,
+    weight: state.body.weightKg,
+    height: state.body.heightCm,
+    activity: state.body.activity,
+    budget: val("budget"),
+    days: state.days ?? 1,
+    maxrepeat: val("maxrepeat"),
+    practical: state.practical ?? false,
+    excluded: [...excluded],
+    theme,
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, serializeSaved(saved));
+  } catch {
+    /* quota or blocked storage: ignore */
+  }
+}
 
 function readState(): AppState {
   const budgetRaw = val("budget").trim();
@@ -77,6 +144,7 @@ function render(): void {
       ? paretoSvg(proteinPareto(outcome.foods, outcome.targets))
       : "";
   $("timing").textContent = `Solved in ${ms.toFixed(1)} ms`;
+  save();
 }
 
 form.addEventListener("input", render);
@@ -110,4 +178,49 @@ $("result").addEventListener("click", (e) => {
     URL.revokeObjectURL(url);
   }
 });
+const help = $<HTMLDialogElement>("help");
+$("help-list").innerHTML = SHORTCUTS.map(
+  (s) => `<dt><kbd>${s.key}</kbd></dt><dd>${s.action}</dd>`,
+).join("");
+const toggleHelp = (): void => {
+  if (help.open) help.close();
+  else help.showModal();
+};
+const cycleTheme = (): void => {
+  theme = nextTheme(theme);
+  applyTheme();
+  save();
+};
+$("help-btn").addEventListener("click", toggleHelp);
+$("theme-btn").addEventListener("click", cycleTheme);
+document.addEventListener("keydown", (e) => {
+  const action = shortcutAction(e.key, e.target as HTMLElement | null, {
+    ctrl: e.ctrlKey,
+    meta: e.metaKey,
+    alt: e.altKey,
+  });
+  if (!action) return;
+  if (action === "close") {
+    if (help.open) help.close();
+    return;
+  }
+  e.preventDefault();
+  if (action === "help") toggleHelp();
+  else if (action === "theme") cycleTheme();
+  else if (action === "budget") $("budget").focus();
+  else if (action === "reset") {
+    excluded.clear();
+    render();
+  } else if (
+    action === "copy" &&
+    lastOutcome?.kind === "ok" &&
+    lastOutcome.menu
+  )
+    void navigator.clipboard?.writeText(
+      shoppingText(lastOutcome.menu.shopping),
+    );
+});
+
+restore();
+applyTheme();
 render();

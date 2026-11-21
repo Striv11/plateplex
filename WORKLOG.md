@@ -45,3 +45,10 @@ Newest entries at the bottom. Each entry records what actually changed, what was
 - Tests: all 12 goal/body combinations give whole units within 2% and bounded cost versus the LP; hand-checkable integer optimum (3 eggs); node limit respected; variety limit never exceeded; variety costs at least the repeated-cheapest-day; shopping totals, aisles and CSV.
 - Learned: the 300-node limit is hit on every realistic plan, so B&B acts as a good anytime heuristic rather than a proof of optimality (about 100-300 ms, so it is outside the 50 ms single-plan budget). A real MILP bound would need better incumbents or cuts.
 - Next: Day 6, design system and dark theme, keyboard shortcuts, localStorage persistence, PWA, Playwright e2e, solver benchmark in CI.
+
+## 2026-11-21 (Day 6, part 1)
+
+- Added `src/persist.ts`: defensive parse/serialize of form state (bad or old storage is ignored field by field), theme cycle (auto/light/dark), shortcut map. Wired in `main.ts`: state restored on load and saved after each render; dark theme via CSS variables (follows `prefers-color-scheme` in auto); `?` help dialog, `t`, `/`, `r`, `c` shortcuts that never fire while typing in fields.
+- Added `tests/bench.test.ts`: median-of-15 solve time under 50 ms for every goal, and the Pareto sweep under 2 s. It runs in `check.sh`, so CI enforces it.
+- Learned: median timings are stable enough for a CI budget where single-run timings are not.
+- Next: Day 6 remainder: installable offline PWA (manifest, service worker) and Playwright e2e (needs a browser download; check availability first).
